@@ -10,7 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ArrowRight, Gift, Palette, UserCheck } from "lucide-react";
+import { ArrowRight, Gift, UserCheck, Users } from "lucide-react";
 import Image from "next/image";
 
 const products = [
@@ -88,14 +88,14 @@ export default function Home() {
               <div className="p-6">
                 <div className="flex items-center justify-center mb-4">
                   <div className="p-3 bg-accent/10 rounded-full">
-                    <Palette className="h-8 w-8 text-accent" />
+                    <Users className="h-8 w-8 text-accent" />
                   </div>
                 </div>
                 <h3 className="text-xl font-headline font-semibold text-primary mb-2">
-                  Product Customization
+                  Connect with Creators
                 </h3>
                 <p className="text-muted-foreground">
-                  Modify products to your liking with flexible customization options.
+                  Collaborate with talented artisans to bring your unique vision to life.
                 </p>
               </div>
             </div>
@@ -173,21 +173,21 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Product Customization CTA */}
+        {/* Creator CTA Section */}
         <section className="py-20 bg-primary text-primary-foreground">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-headline font-bold mb-4">
-              Create Something Uniquely Yours
+              Co-Create with Our Artisans
             </h2>
             <p className="text-lg max-w-2xl mx-auto mb-8 text-primary-foreground/80">
-              Use our customization tools to tailor products to fit your style and needs.
+              Our platform connects you with skilled creators who can bring your unique designs to life. Start a collaboration today.
             </p>
             <Button
               size="lg"
               variant="secondary"
               className="bg-accent hover:bg-accent/90 text-accent-foreground"
             >
-              Start Customizing <Palette className="ml-2 h-5 w-5" />
+              Meet the Creators <Users className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </section>

@@ -14,7 +14,7 @@ export function Header() {
     { href: "#", label: "Home" },
     { href: "#", label: "Shop" },
     { href: "#", label: "For You" },
-    { href: "#", label: "Customize" },
+    { href: "#", label: "Creators" },
   ];
 
   return (

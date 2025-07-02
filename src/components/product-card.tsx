@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Palette } from 'lucide-react';
+import { ShoppingCart, Scissors } from 'lucide-react';
 
 interface Product {
   id: number;
@@ -40,8 +40,8 @@ export function ProductCard({ product }: ProductCardProps) {
               Add to Cart
             </Button>
             <Button variant="outline" size="sm" className="flex-1">
-              <Palette className="mr-2 h-4 w-4" />
-              Customize
+              <Scissors className="mr-2 h-4 w-4" />
+              Personalize
             </Button>
           </div>
         </div>
