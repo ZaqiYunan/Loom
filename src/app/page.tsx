@@ -10,25 +10,25 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ArrowRight, Gift, Zap, Palette } from "lucide-react";
+import { ArrowRight, Gift, Palette, UserCheck } from "lucide-react";
 import Image from "next/image";
 
 const products = [
-  { id: 1, name: "Kemeja Linen Premium", category: "Pakaian Pria", price: "Rp 750.000", image: "https://placehold.co/400x400.png", aiHint: "linen shirt" },
-  { id: 2, name: "Gaun Musim Panas", category: "Pakaian Wanita", price: "Rp 1.250.000", image: "https://placehold.co/400x400.png", aiHint: "summer dress" },
-  { id: 3, name: "Headphone Nirkabel", category: "Elektronik", price: "Rp 2.100.000", image: "https://placehold.co/400x400.png", aiHint: "wireless headphones" },
-  { id: 4, name: "Tas Kulit Buatan Tangan", category: "Aksesoris", price: "Rp 1.800.000", image: "https://placehold.co/400x400.png", aiHint: "leather bag" },
-  { id: 5, name: "Sepatu Lari Atletik", category: "Sepatu", price: "Rp 1.500.000", image: "https://placehold.co/400x400.png", aiHint: "running shoes" },
-  { id: 6, name: "Jam Tangan Klasik", category: "Aksesoris", price: "Rp 4.500.000", image: "https://placehold.co/400x400.png", aiHint: "classic watch" },
-  { id: 7, name: "Blazer Modern", category: "Pakaian Pria", price: "Rp 1.950.000", image: "https://placehold.co/400x400.png", aiHint: "modern blazer" },
-  { id: 8, name: "Kalung Permata", category: "Perhiasan", price: "Rp 3.200.000", image: "https://placehold.co/400x400.png", aiHint: "gemstone necklace" },
+  { id: 1, name: "Premium Linen Shirt", category: "Men's Apparel", price: "$49.99", image: "https://placehold.co/400x400.png", aiHint: "linen shirt" },
+  { id: 2, name: "Summer Breeze Dress", category: "Women's Apparel", price: "$89.99", image: "https://placehold.co/400x400.png", aiHint: "summer dress" },
+  { id: 3, name: "Handcrafted Leather Bag", category: "Accessories", price: "$120.00", image: "https://placehold.co/400x400.png", aiHint: "leather bag" },
+  { id: 4, name: "Athletic Running Shoes", category: "Footwear", price: "$99.99", image: "https://placehold.co/400x400.png", aiHint: "running shoes" },
+  { id: 5, name: "Classic Timepiece", category: "Accessories", price: "$299.00", image: "https://placehold.co/400x400.png", aiHint: "classic watch" },
+  { id: 6, name: "Modern Fit Blazer", category: "Men's Apparel", price: "$150.00", image: "https://placehold.co/400x400.png", aiHint: "modern blazer" },
+  { id: 7, name: "Gemstone Necklace", category: "Jewelry", price: "$210.00", image: "https://placehold.co/400x400.png", aiHint: "gemstone necklace" },
+  { id: 8, name: "High-Waisted Jeans", category: "Women's Apparel", price: "$75.00", image: "https://placehold.co/400x400.png", aiHint: "high waisted jeans" },
 ];
 
 const categories = [
-  { name: "Gaya Pria", image: "https://placehold.co/400x500.png", aiHint: "mens fashion" },
-  { name: "Gaya Wanita", image: "https://placehold.co/400x500.png", aiHint: "womens fashion" },
-  { name: "Aksesoris", image: "https://placehold.co/400x500.png", aiHint: "fashion accessories" },
-  { name: "Elektronik", image: "https://placehold.co/400x500.png", aiHint: "consumer electronics" },
+  { name: "Urban Explorer", image: "https://placehold.co/400x500.png", aiHint: "urban fashion" },
+  { name: "Modern Minimalist", image: "https://placehold.co/400x500.png", aiHint: "minimalist fashion" },
+  { name: "Vintage Enthusiast", image: "https://placehold.co/400x500.png", aiHint: "vintage fashion" },
+  { name: "Athleisure All-Day", image: "https://placehold.co/400x500.png", aiHint: "athleisure fashion" },
 ];
 
 export default function Home() {
@@ -41,17 +41,16 @@ export default function Home() {
           <div className="absolute inset-0 bg-grid-pattern opacity-50"></div>
           <div className="container mx-auto px-4 relative">
             <h1 className="text-4xl md:text-6xl font-headline font-bold text-primary mb-4 animate-fade-in-down">
-              Belanja Disesuaikan, Hanya Untuk Anda
+              Fashion, Segmented For You
             </h1>
             <p className="text-lg md:text-xl text-primary/80 max-w-3xl mx-auto mb-8 animate-fade-in-up">
-              ACHATS: Platform e-commerce dengan personalisasi dan efisiensi
-              untuk pengalaman belanja yang tak terlupakan.
+              ACHATS discovers your unique style profile to curate a personalized shopping experience you'll love.
             </p>
             <Button
               size="lg"
               className="bg-accent hover:bg-accent/90 text-accent-foreground animate-fade-in"
             >
-              Mulai Belanja <ArrowRight className="ml-2 h-5 w-5" />
+              Discover Your Style <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </section>
@@ -63,27 +62,27 @@ export default function Home() {
               <div className="p-6">
                 <div className="flex items-center justify-center mb-4">
                   <div className="p-3 bg-accent/10 rounded-full">
-                    <Gift className="h-8 w-8 text-accent" />
+                    <UserCheck className="h-8 w-8 text-accent" />
                   </div>
                 </div>
                 <h3 className="text-xl font-headline font-semibold text-primary mb-2">
-                  Rekomendasi Cerdas
+                  Style Profiling
                 </h3>
                 <p className="text-muted-foreground">
-                  Produk pilihan yang sesuai dengan selera dan preferensi Anda.
+                  Discover fashion that truly represents your unique style profile.
                 </p>
               </div>
               <div className="p-6">
                 <div className="flex items-center justify-center mb-4">
                   <div className="p-3 bg-accent/10 rounded-full">
-                    <Zap className="h-8 w-8 text-accent" />
+                    <Gift className="h-8 w-8 text-accent" />
                   </div>
                 </div>
                 <h3 className="text-xl font-headline font-semibold text-primary mb-2">
-                  Pengalaman Terpersonalisasi
+                  Curated Collections
                 </h3>
                 <p className="text-muted-foreground">
-                  Tampilan konten dan penawaran yang disesuaikan untuk Anda.
+                  Explore collections and offers tailored to your fashion segment.
                 </p>
               </div>
               <div className="p-6">
@@ -93,11 +92,10 @@ export default function Home() {
                   </div>
                 </div>
                 <h3 className="text-xl font-headline font-semibold text-primary mb-2">
-                  Kustomisasi Produk
+                  Product Customization
                 </h3>
                 <p className="text-muted-foreground">
-                  Ubah produk sesuai keinginan dengan opsi kustomisasi yang
-                  fleksibel.
+                  Modify products to your liking with flexible customization options.
                 </p>
               </div>
             </div>
@@ -108,10 +106,10 @@ export default function Home() {
         <section className="py-16 bg-primary/5">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-headline font-bold text-center text-primary mb-2">
-              Rekomendasi Untuk Anda
+              Recommended For You
             </h2>
             <p className="text-center text-muted-foreground mb-10">
-              Berdasarkan aktivitas dan minat Anda baru-baru ini.
+              Based on your style profile and recent activity.
             </p>
             <Carousel
               opts={{ align: "start", loop: true }}
@@ -139,7 +137,7 @@ export default function Home() {
         <section className="py-16">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-headline font-bold text-center text-primary mb-10">
-              Jelajahi Berdasarkan Kategori
+              Explore Your Style Segment
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {categories.map((category) => (
@@ -165,7 +163,7 @@ export default function Home() {
                         variant="link"
                         className="text-accent-foreground p-0 h-auto mt-2 hover:text-accent"
                       >
-                        Lihat Koleksi <ArrowRight className="ml-2 h-4 w-4" />
+                        View Collection <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
                   </CardContent>
@@ -179,18 +177,17 @@ export default function Home() {
         <section className="py-20 bg-primary text-primary-foreground">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-headline font-bold mb-4">
-              Buat Sesuatu yang Unik Milik Anda
+              Create Something Uniquely Yours
             </h2>
             <p className="text-lg max-w-2xl mx-auto mb-8 text-primary-foreground/80">
-              Gunakan alat kustomisasi kami untuk menyesuaikan produk agar
-              sesuai dengan gaya dan kebutuhan Anda.
+              Use our customization tools to tailor products to fit your style and needs.
             </p>
             <Button
               size="lg"
               variant="secondary"
               className="bg-accent hover:bg-accent/90 text-accent-foreground"
             >
-              Mulai Kustomisasi <Palette className="ml-2 h-5 w-5" />
+              Start Customizing <Palette className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </section>

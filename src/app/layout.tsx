@@ -3,8 +3,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "Achats Personalize",
-  description: "Pengalaman belanja yang dipersonalisasi untuk Anda.",
+  title: "Achats: Custom Fashion",
+  description: "Your personalized fashion experience starts here.",
 };
 
 export default function RootLayout({

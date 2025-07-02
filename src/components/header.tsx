@@ -37,7 +37,7 @@ export function Header() {
 
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="hidden sm:flex items-center gap-2">
-            <Input type="search" placeholder="Cari produk..." className="h-9 w-40 lg:w-64" />
+            <Input type="search" placeholder="Search products..." className="h-9 w-40 lg:w-64" />
           </div>
           <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
             <Search className="h-5 w-5 text-muted-foreground" />
@@ -78,7 +78,7 @@ export function Header() {
                   </ul>
                 </nav>
                 <div className="p-4 border-t">
-                    <Input type="search" placeholder="Cari produk..." className="w-full" />
+                    <Input type="search" placeholder="Search products..." className="w-full" />
                 </div>
               </div>
             </SheetContent>

@@ -37,11 +37,11 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex gap-2 mt-4">
             <Button size="sm" className="flex-1 bg-primary hover:bg-primary/90">
               <ShoppingCart className="mr-2 h-4 w-4" />
-              Keranjang
+              Add to Cart
             </Button>
             <Button variant="outline" size="sm" className="flex-1">
               <Palette className="mr-2 h-4 w-4" />
-              Kustom
+              Customize
             </Button>
           </div>
         </div>

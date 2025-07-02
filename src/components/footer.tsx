@@ -10,7 +10,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="md:col-span-1 lg:col-span-1">
             <h3 className="text-lg font-semibold text-primary mb-4">ACHATS</h3>
-            <p className="text-muted-foreground text-sm">Pengalaman belanja yang dipersonalisasi untuk Anda.</p>
+            <p className="text-muted-foreground text-sm">Your personalized shopping experience.</p>
             <div className="flex space-x-4 mt-4">
               <Link href="#" className="text-muted-foreground hover:text-primary"><Twitter className="h-5 w-5" /></Link>
               <Link href="#" className="text-muted-foreground hover:text-primary"><Facebook className="h-5 w-5" /></Link>
@@ -18,28 +18,28 @@ export function Footer() {
             </div>
           </div>
           <div>
-            <h3 className="text-md font-semibold text-primary mb-4">Tautan Cepat</h3>
+            <h3 className="text-md font-semibold text-primary mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Tentang Kami</Link></li>
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Kontak</Link></li>
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Karir</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">About Us</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Contact</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Careers</Link></li>
               <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Blog</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-md font-semibold text-primary mb-4">Akun</h3>
+            <h3 className="text-md font-semibold text-primary mb-4">Account</h3>
             <ul className="space-y-2">
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Profil Saya</Link></li>
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Pesanan</Link></li>
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Daftar Keinginan</Link></li>
-              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Bandingkan Produk</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">My Profile</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Orders</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Wishlist</Link></li>
+              <li><Link href="#" className="text-sm text-muted-foreground hover:text-primary">Compare Products</Link></li>
             </ul>
           </div>
           <div>
-            <h3 className="text-md font-semibold text-primary mb-4">Buletin</h3>
-            <p className="text-sm text-muted-foreground mb-4">Dapatkan pembaruan terbaru dan penawaran khusus.</p>
+            <h3 className="text-md font-semibold text-primary mb-4">Newsletter</h3>
+            <p className="text-sm text-muted-foreground mb-4">Get the latest updates and special offers.</p>
             <form className="flex w-full max-w-sm items-center space-x-2">
-              <Input type="email" placeholder="Email Anda" />
+              <Input type="email" placeholder="Your Email" />
               <Button type="submit" size="icon" className="bg-accent hover:bg-accent/90">
                 <Send className="h-4 w-4" />
               </Button>
@@ -47,7 +47,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Achats Personalize. Semua Hak Dilindungi.</p>
+          <p>&copy; {new Date().getFullYear()} Achats. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
