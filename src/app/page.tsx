@@ -44,7 +44,7 @@ export default function Home() {
               Fashion, Segmented For You
             </h1>
             <p className="text-lg md:text-xl text-primary/80 max-w-3xl mx-auto mb-8 animate-fade-in-up">
-              ACHATS discovers your unique style profile to curate a personalized shopping experience you'll love.
+              StyleSync discovers your unique style profile to curate a personalized shopping experience you'll love.
             </p>
             <Button
               size="lg"
