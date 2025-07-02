@@ -41,10 +41,10 @@ export default function Home() {
           <div className="absolute inset-0 bg-grid-pattern opacity-50"></div>
           <div className="container mx-auto px-4 relative">
             <h1 className="text-4xl md:text-6xl font-headline font-bold text-primary mb-4 animate-fade-in-down">
-              Fashion, Segmented For You
+              Fashion, Woven For You
             </h1>
             <p className="text-lg md:text-xl text-primary/80 max-w-3xl mx-auto mb-8 animate-fade-in-up">
-              StyleSync discovers your unique style profile to curate a personalized shopping experience you'll love.
+              Loom discovers your unique style profile to curate a personalized shopping experience you'll love.
             </p>
             <Button
               size="lg"

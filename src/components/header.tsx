@@ -24,7 +24,7 @@ export function Header() {
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-primary">
             <path d="M12 2L1 21h22L12 2zm-1.21 15L12 11.67 13.21 17h-2.42z"/>
           </svg>
-          <span className="text-2xl font-bold font-headline text-primary">STYLESYNC</span>
+          <span className="text-2xl font-bold font-headline text-primary">LOOM</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
@@ -63,7 +63,7 @@ export function Header() {
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-primary">
                           <path d="M12 2L1 21h22L12 2zm-1.21 15L12 11.67 13.21 17h-2.42z"/>
                         </svg>
-                        <span className="text-xl font-bold font-headline text-primary">STYLESYNC</span>
+                        <span className="text-xl font-bold font-headline text-primary">LOOM</span>
                     </Link>
                 </div>
                 <nav className="flex-grow p-4">

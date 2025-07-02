@@ -3,8 +3,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "StyleSync: Custom Fashion",
-  description: "Your personalized fashion experience, synchronized.",
+  title: "Loom: Weaving Your Style",
+  description: "Weaving together your unique style profile for a truly personal shopping experience.",
 };
 
 export default function RootLayout({

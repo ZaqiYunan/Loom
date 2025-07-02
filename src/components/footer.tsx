@@ -9,8 +9,8 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="md:col-span-1 lg:col-span-1">
-            <h3 className="text-lg font-semibold text-primary mb-4">STYLESYNC</h3>
-            <p className="text-muted-foreground text-sm">Your personalized shopping experience.</p>
+            <h3 className="text-lg font-semibold text-primary mb-4">LOOM</h3>
+            <p className="text-muted-foreground text-sm">Weaving your unique style.</p>
             <div className="flex space-x-4 mt-4">
               <Link href="#" className="text-muted-foreground hover:text-primary"><Twitter className="h-5 w-5" /></Link>
               <Link href="#" className="text-muted-foreground hover:text-primary"><Facebook className="h-5 w-5" /></Link>
@@ -47,7 +47,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} StyleSync. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Loom. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
