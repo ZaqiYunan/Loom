@@ -21,9 +21,9 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         <Link href="#" className="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-primary">
-            <path d="M12 2L1 21h22L12 2zm-1.21 15L12 11.67 13.21 17h-2.42z"/>
-          </svg>
+          <div className="w-8 h-8 bg-primary/10 border-2 border-dashed border-primary rounded-sm flex items-center justify-center">
+            <span className="font-bold text-primary text-lg">L</span>
+          </div>
           <span className="text-2xl font-bold font-headline text-primary">LOOM</span>
         </Link>
 
@@ -60,9 +60,9 @@ export function Header() {
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b">
                     <Link href="#" className="flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-primary">
-                          <path d="M12 2L1 21h22L12 2zm-1.21 15L12 11.67 13.21 17h-2.42z"/>
-                        </svg>
+                        <div className="w-8 h-8 bg-primary/10 border-2 border-dashed border-primary rounded-sm flex items-center justify-center">
+                           <span className="font-bold text-primary text-lg">L</span>
+                       </div>
                         <span className="text-xl font-bold font-headline text-primary">LOOM</span>
                     </Link>
                 </div>
