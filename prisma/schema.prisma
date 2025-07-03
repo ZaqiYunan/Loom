@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  username    String       @unique
+  password    String
+  email       String       @unique
+  fullName    String       @map("full_name")
+  role        String       @default("user") // 'user' atau 'seller'
+  createdAt   DateTime     @default(now()) @map("created_at")
+  
+  seller      Seller?
+  carts       Cart[]
+  orders      Order[]
+  userSkills  UserSkill[]
+  messages    Message[]    // Pesan yang dikirim oleh user
+
+  @@map("users")
+}
+
+model Seller {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique @map("user_id")
+  storeName   String   @map("store_name")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  user        User     @relation(fields: [userId], references: [id])
+  products    Product[]
+  orders      Order[]
+
+  @@map("sellers")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  sellerId    Int      @map("seller_id")
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?  @map("image_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  seller      Seller   @relation(fields: [sellerId], references: [id])
+  cartItems   Cart[]
+  orderItems  OrderItem[]
+
+  @@map("products")
+}
+
+model Cart {
+  id         Int @id @default(autoincrement())
+  userId     Int @map("user_id")
+  productId  Int @map("product_id")
+  quantity   Int
+  
+  user       User    @relation(fields: [userId], references: [id])
+  product    Product @relation(fields: [productId], references: [id])
+
+  @@map("carts")
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  sellerId      Int      @map("seller_id")
+  requestTitle  String   @map("request_title")
+  description   String
+  category      String
+  measurements  String?
+  designFileUrl String?  @map("design_file_url")
+  status        String   @default("request_submitted")
+  quotedPrice   Float?   @map("quoted_price")
+  snapToken     String?
+  orderDate     DateTime @default(now()) @map("order_date")
+  totalAmount   Float    @map("total_amount")
+  
+  user          User     @relation(fields: [userId], references: [id])
+  seller        Seller   @relation(fields: [sellerId], references: [id])
+  
+  conversation  Conversation? // Setiap order punya satu conversation
+  items         OrderItem[]
+
+  @@map("orders")
+}
+
+// Model untuk percakapan terkait sebuah pesanan
+model Conversation {
+  id      Int       @id @default(autoincrement())
+  orderId Int       @unique @map("order_id")
+  order   Order     @relation(fields: [orderId], references: [id])
+  
+  messages Message[]
+
+  @@map("conversations")
+}
+
+// Model untuk setiap pesan dalam percakapan
+model Message {
+  id              Int      @id @default(autoincrement())
+  conversationId  Int      @map("conversation_id")
+  senderId        Int      @map("sender_id") // ID dari User yang mengirim
+  content         String
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id])
+  sender          User         @relation(fields: [senderId], references: [id])
+
+  @@map("messages")
+}
+
+model Skill {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  userSkills UserSkill[]
+
+  @@map("skills")
+}
+
+model UserSkill {
+  id      Int @id @default(autoincrement())
+  userId  Int @map("user_id")
+  skillId Int @map("skill_id")
+  
+  user    User  @relation(fields: [userId], references: [id])
+  skill   Skill @relation(fields: [skillId], references: [id])
+
+  @@map("user_skills")
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @map("order_id")
+  productId Int      @map("product_id")
+  quantity  Int
+  price     Float
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
