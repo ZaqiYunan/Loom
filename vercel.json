@@ -1,11 +1,4 @@
 {
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "AUTH_SECRET": "@auth_secret",
-    "MIDTRANS_SERVER_KEY": "@midtrans_server_key",
-    "MIDTRANS_CLIENT_KEY": "@midtrans_client_key",
-    "NEXT_PUBLIC_MIDTRANS_CLIENT_KEY": "@midtrans_client_key"
-  },
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
