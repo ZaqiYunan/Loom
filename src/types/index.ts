@@ -3,12 +3,11 @@
 export interface Product {
   id: number;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
-  imageUrl?: string;
+  imageUrl?: string | null;
   sellerId: number;
   createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface CartItem {
@@ -26,9 +25,8 @@ export interface OrderItem {
   quantity: number;
   price: number;
   product: {
-    id: number;
     name: string;
-    imageUrl?: string;
+    imageUrl: string | null;
   };
 }
 
@@ -39,7 +37,6 @@ export interface Order {
   totalAmount: number;
   status: string;
   orderDate: Date;
-  createdAt: Date;
   items: OrderItem[];
 }
 

@@ -56,7 +56,7 @@ export default function OrdersPage() {
                 <div>
                   <h2 className="text-lg font-semibold">Order #{order.id}</h2>
                   <p className="text-gray-600">
-                    Placed on {new Date(order.orderDate || order.createdAt).toLocaleDateString()}
+                    Placed on {new Date(order.orderDate).toLocaleDateString()}
                   </p>
                   <span className={`inline-block px-2 py-1 text-sm rounded-full mt-2 ${
                     order.status === 'completed' ? 'bg-green-100 text-green-800' :
