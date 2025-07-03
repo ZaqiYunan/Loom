@@ -1,11 +1,4 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
   "env": {
     "DATABASE_URL": "@database_url",
     "AUTH_SECRET": "@auth_secret",
@@ -14,7 +7,7 @@
     "NEXT_PUBLIC_MIDTRANS_CLIENT_KEY": "@midtrans_client_key"
   },
   "functions": {
-    "src/app/api/**/*.ts": {
+    "app/api/**/*.ts": {
       "maxDuration": 30
     }
   }

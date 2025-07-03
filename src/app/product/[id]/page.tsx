@@ -2,14 +2,14 @@
 
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface ProductDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
@@ -18,7 +18,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
 
-  const productId = parseInt(params.id);
+  const resolvedParams = use(params);
+  const productId = parseInt(resolvedParams.id);
   const { data: product, isLoading } = api.product.getById.useQuery({ id: productId });
 
   const addToCartMutation = api.cart.add.useMutation({
