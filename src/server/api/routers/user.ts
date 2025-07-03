@@ -2,7 +2,7 @@ import { z } from 'zod';
 import * as bcrypt from 'bcryptjs';
 import { TRPCError } from '@trpc/server';
 
-import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
+import { createTRPCRouter, publicProcedure, sellerProcedure } from '~/server/api/trpc';
 import { db } from '~/server/db';
 
 export const userRouter = createTRPCRouter({
@@ -68,5 +68,58 @@ export const userRouter = createTRPCRouter({
       // Remove password from object returned to client
       const { password: _, ...userWithoutPassword } = newUser;
       return userWithoutPassword;
+    }),
+
+  /**
+   * Get seller profile for the current logged-in seller
+   */
+  getSellerProfile: sellerProcedure.query(async ({ ctx }) => {
+    const seller = await ctx.db.seller.findUnique({
+      where: { userId: parseInt(ctx.session.user.id) },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+          }
+        }
+      }
+    });
+
+    if (!seller) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Seller profile not found.' });
+    }
+
+    return seller;
+  }),
+
+  /**
+   * Update seller profile
+   */
+  updateSellerProfile: sellerProcedure
+    .input(
+      z.object({
+        storeName: z.string().min(3, "Store name must be at least 3 characters"),
+        description: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const seller = await ctx.db.seller.findUnique({
+        where: { userId: parseInt(ctx.session.user.id) },
+      });
+
+      if (!seller) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Seller profile not found.' });
+      }
+
+      const updatedSeller = await ctx.db.seller.update({
+        where: { id: seller.id },
+        data: {
+          storeName: input.storeName,
+          description: input.description,
+        },
+      });
+
+      return updatedSeller;
     }),
 });
