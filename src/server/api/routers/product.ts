@@ -46,6 +46,29 @@ export const productRouter = createTRPCRouter({
     }),
 
   /**
+   * Get products by seller ID (public)
+   */
+  getBySeller: publicProcedure
+    .input(z.object({ sellerId: z.number() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.product.findMany({
+        where: { sellerId: input.sellerId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          seller: {
+            include: {
+              user: {
+                select: {
+                  fullName: true,
+                }
+              }
+            }
+          }
+        }
+      });
+    }),
+
+  /**
    * Get all products owned by the currently logged-in seller.
    * Protected by sellerProcedure.
    */

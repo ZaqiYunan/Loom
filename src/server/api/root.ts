@@ -9,6 +9,7 @@ import { profileRouter } from '~/server/api/routers/profile';
 import { customOrderRouter } from '~/server/api/routers/customOrder';
 import { uploadRouter } from '~/server/api/routers/upload';
 import { notificationRouter } from '~/server/api/routers/notification';
+import { portfolioRouter } from '~/server/api/routers/portfolio';
 import { createTRPCRouter } from '~/server/api/trpc';
 
 /**
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
   customOrder: customOrderRouter,
   upload: uploadRouter,
   notification: notificationRouter,
+  portfolio: portfolioRouter,
 });
 
 // Ekspor type definition dari API

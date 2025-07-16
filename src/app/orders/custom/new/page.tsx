@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Upload, Camera, Package, Truck, Clock, User, X } from "lucide-react";
 import Link from "next/link";
 import { uploadImage, validateImageFile } from "~/lib/upload";
 
-export default function CustomOrderPage() {
+function CustomOrderForm() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedSeller, setSelectedSeller] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -25,6 +26,14 @@ export default function CustomOrderPage() {
 
   // Get all sellers for selection
   const { data: sellers } = api.user.getAllSellers.useQuery();
+
+  // Pre-select seller from URL parameter
+  useEffect(() => {
+    const sellerIdParam = searchParams.get('sellerId');
+    if (sellerIdParam) {
+      setSelectedSeller(sellerIdParam);
+    }
+  }, [searchParams]);
 
   // Create custom order mutation
   const createCustomOrderMutation = api.customOrder.create.useMutation({
@@ -370,5 +379,17 @@ export default function CustomOrderPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function CustomOrderPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-8">
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      </div>
+    </div>}>
+      <CustomOrderForm />
+    </Suspense>
   );
 }
