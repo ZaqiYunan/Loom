@@ -66,6 +66,19 @@ export default function SellerDashboardPage() {
           </div>
         </Link>
 
+        {/* Custom Orders */}
+        <Link href="/dashboard/seller/custom-orders" className="block">
+          <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
+            <div className="text-indigo-600 mb-4">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Custom Orders</h3>
+            <p className="text-gray-600 text-sm">Manage custom design requests</p>
+          </div>
+        </Link>
+
         {/* Analytics */}
         <Link href="/dashboard/seller/analytics" className="block">
           <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">

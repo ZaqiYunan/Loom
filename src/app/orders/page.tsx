@@ -2,6 +2,8 @@
 
 import { api } from "~/trpc/react";
 import { useSession } from "next-auth/react";
+import { Plus, Package } from "lucide-react";
+import Link from "next/link";
 import type { Order } from "~/types";
 
 export default function OrdersPage() {
@@ -36,17 +38,48 @@ export default function OrdersPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Your Orders</h1>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Your Orders</h1>
+          <p className="text-gray-600">Track your purchases and custom orders</p>
+        </div>
+        <div className="flex space-x-3">
+          <Link
+            href="/orders/custom"
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+          >
+            <Package className="h-4 w-4" />
+            <span>Custom Orders</span>
+          </Link>
+          <Link
+            href="/orders/custom/new"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Custom Order</span>
+          </Link>
+        </div>
+      </div>
       
       {!orders || orders.length === 0 ? (
         <div className="text-center py-16">
-          <div className="text-gray-500 text-lg mb-4">You haven&apos;t placed any orders yet</div>
-          <a
-            href="/"
-            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors inline-block"
-          >
-            Start Shopping
-          </a>
+          <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Orders Yet</h3>
+          <p className="text-gray-600 mb-6">You haven't placed any orders yet</p>
+          <div className="flex justify-center space-x-4">
+            <Link
+              href="/"
+              className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors inline-block"
+            >
+              Start Shopping
+            </Link>
+            <Link
+              href="/orders/custom/new"
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors inline-block"
+            >
+              Submit Custom Order
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">

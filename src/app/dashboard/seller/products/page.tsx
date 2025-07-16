@@ -11,16 +11,16 @@ export default function ManageProductsPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  // Query untuk mengambil produk milik seller
+  // Query to get products owned by seller
   const { data: products, isLoading, error, refetch } = api.product.getForSeller.useQuery(
-    undefined, // tidak ada input yang dibutuhkan
+    undefined, // no input needed
     {
-      // Hanya jalankan query jika user adalah seller
+      // Only run query if user is a seller
       enabled: session?.user?.role === "seller",
     }
   );
 
-  // Mutasi untuk menghapus produk
+  // Mutation to delete product
   const deleteProductMutation = api.product.delete.useMutation({
     onSuccess: () => {
       alert("Product successfully deleted.");
@@ -57,15 +57,15 @@ export default function ManageProductsPage() {
       <div className="container mx-auto px-4 py-12">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Kelola Produk Saya</h1>
-            <p className="mt-1 text-gray-600">Lihat, edit, atau hapus produk barang jadi Anda.</p>
+            <h1 className="text-3xl font-bold text-gray-900">Manage My Products</h1>
+            <p className="mt-1 text-gray-600">View, edit, or delete your finished products.</p>
           </div>
           <Link
-            href="/products/add"
+            href="/dashboard/seller/products/new"
             className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
           >
             <PlusCircle className="h-4 w-4" />
-            Tambah Produk Baru
+            Add New Product
           </Link>
         </div>
 
@@ -74,7 +74,7 @@ export default function ManageProductsPage() {
           {isLoading && (
             <div className="p-12 text-center">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-indigo-600" />
-              <p className="mt-2 text-gray-500">Memuat produk Anda...</p>
+              <p className="mt-2 text-gray-500">Loading your products...</p>
             </div>
           )}
           {error && (
@@ -89,7 +89,7 @@ export default function ManageProductsPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Produk</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Product</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Harga</th>
                       <th scope="col" className="relative px-6 py-3"><span className="sr-only">Aksi</span></th>
                     </tr>
@@ -117,9 +117,12 @@ export default function ManageProductsPage() {
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                           <div className="flex items-center justify-end gap-4">
-                            <button className="text-indigo-600 hover:text-indigo-900">
+                            <Link 
+                              href={`/dashboard/seller/products/${product.id}/edit`}
+                              className="text-indigo-600 hover:text-indigo-900"
+                            >
                               <Edit className="h-4 w-4" />
-                            </button>
+                            </Link>
                             <button
                               onClick={() => handleDelete(product.id)}
                               disabled={deleteProductMutation.isPending}
@@ -136,8 +139,8 @@ export default function ManageProductsPage() {
               </div>
             ) : (
               <div className="p-12 text-center">
-                <h3 className="text-lg font-medium text-gray-900">Anda belum memiliki produk</h3>
-                <p className="mt-1 text-sm text-gray-500">Mulai jual barang jadi Anda dengan menambahkan produk baru.</p>
+                <h3 className="text-lg font-medium text-gray-900">You don't have any products yet</h3>
+                <p className="mt-1 text-sm text-gray-500">Start selling your finished products by adding a new product.</p>
               </div>
             )
           )}

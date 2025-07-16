@@ -6,6 +6,9 @@ import { paymentRouter } from '~/server/api/routers/payment';
 import { chatRouter } from '~/server/api/routers/chat';
 import { searchRouter } from '~/server/api/routers/search';
 import { profileRouter } from '~/server/api/routers/profile';
+import { customOrderRouter } from '~/server/api/routers/customOrder';
+import { uploadRouter } from '~/server/api/routers/upload';
+import { notificationRouter } from '~/server/api/routers/notification';
 import { createTRPCRouter } from '~/server/api/trpc';
 
 /**
@@ -22,6 +25,9 @@ export const appRouter = createTRPCRouter({
   chat: chatRouter,
   search: searchRouter,
   profile: profileRouter,
+  customOrder: customOrderRouter,
+  upload: uploadRouter,
+  notification: notificationRouter,
 });
 
 // Ekspor type definition dari API

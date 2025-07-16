@@ -19,11 +19,13 @@ model User {
   role        String       @default("user") // 'user' atau 'seller'
   createdAt   DateTime     @default(now()) @map("created_at")
   
-  seller      Seller?
-  carts       Cart[]
-  orders      Order[]
-  userSkills  UserSkill[]
-  messages    Message[]    // Pesan yang dikirim oleh user
+  seller        Seller?
+  carts         Cart[]
+  orders        Order[]
+  userSkills    UserSkill[]
+  messages      Message[]    // Pesan yang dikirim oleh user
+  notifications Notification[] // Notifikasi untuk user
+  customOrders  CustomOrder[] // Custom orders submitted by the user
 
   @@map("users")
 }
@@ -38,6 +40,7 @@ model Seller {
   user        User     @relation(fields: [userId], references: [id])
   products    Product[]
   orders      Order[]
+  customOrders  CustomOrder[] // Custom orders received by the seller
 
   @@map("sellers")
 }
@@ -96,9 +99,11 @@ model Order {
 
 // Model untuk percakapan terkait sebuah pesanan
 model Conversation {
-  id      Int       @id @default(autoincrement())
-  orderId Int       @unique @map("order_id")
-  order   Order     @relation(fields: [orderId], references: [id])
+  id            Int          @id @default(autoincrement())
+  orderId       Int?         @unique @map("order_id")
+  customOrderId Int?         @unique @map("custom_order_id")
+  order         Order?       @relation(fields: [orderId], references: [id])
+  customOrder   CustomOrder? @relation(fields: [customOrderId], references: [id])
   
   messages Message[]
 
@@ -148,4 +153,50 @@ model OrderItem {
   product   Product  @relation(fields: [productId], references: [id])
 
   @@map("order_items")
+}
+
+// Model for notifications
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  type      String   // 'new_order', 'message', 'order_update'
+  title     String
+  message   String
+  data      String?  // JSON data for additional info
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model CustomOrder {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  sellerId     Int      @map("seller_id")
+  imageUrl     String?  // User-uploaded image of the item
+  description  String   // Customization notes
+  status       String   @default("pending") // pending, accepted, rejected, completed
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user         User     @relation(fields: [userId], references: [id])
+  seller       Seller   @relation(fields: [sellerId], references: [id])
+  courierRequest CourierRequest?
+  conversation Conversation?
+
+  @@map("custom_orders")
+}
+
+model CourierRequest {
+  id            Int      @id @default(autoincrement())
+  customOrderId Int      @unique @map("custom_order_id")
+  address       String
+  pickupTime    DateTime
+  status        String   @default("requested") // requested, picked_up, delivered, cancelled
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  customOrder   CustomOrder @relation(fields: [customOrderId], references: [id])
+
+  @@map("courier_requests")
 }

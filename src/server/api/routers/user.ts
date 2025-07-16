@@ -122,4 +122,21 @@ export const userRouter = createTRPCRouter({
 
       return updatedSeller;
     }),
+
+  /**
+   * Get all sellers for selection
+   */
+  getAllSellers: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.seller.findMany({
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }),
 });

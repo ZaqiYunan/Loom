@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { api } from "~/trpc/react";
-import { Upload, Camera, X } from "lucide-react";
+import { Upload, Camera, X, ArrowLeft } from "lucide-react";
 import { uploadImage, validateImageFile } from "~/lib/upload";
 
-export default function NewProductPage() {
+export default function EditProductPage() {
   const router = useRouter();
+  const params = useParams();
   const { data: session, status } = useSession();
+  const productId = parseInt(params.id as string);
+  
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -21,15 +24,37 @@ export default function NewProductPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
-  const createProductMutation = api.product.create.useMutation({
+  // Get product data
+  const { data: product, isLoading: isLoadingProduct } = api.product.getById.useQuery(
+    { id: productId },
+    { enabled: !!productId }
+  );
+
+  // Update product mutation
+  const updateProductMutation = api.product.update.useMutation({
     onSuccess: () => {
-      alert("Product created successfully!");
+      alert("Product updated successfully!");
       router.push("/dashboard/seller/products");
     },
     onError: (error) => {
       alert(`Error: ${error.message}`);
     },
   });
+
+  // Load product data when available
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name,
+        description: product.description,
+        price: product.price.toString(),
+      });
+      if (product.imageUrl) {
+        setImagePreview(product.imageUrl);
+        setUploadedImageUrl(product.imageUrl);
+      }
+    }
+  }, [product]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -88,10 +113,11 @@ export default function NewProductPage() {
       return;
     }
 
-    // Use the uploaded Supabase URL if available, otherwise fallback to preview or no image
+    // Use the uploaded Supabase URL if available
     const imageUrl = uploadedImageUrl || undefined;
 
-    createProductMutation.mutate({
+    updateProductMutation.mutate({
+      id: productId,
       name: formData.name,
       description: formData.description,
       price: parseFloat(formData.price),
@@ -104,7 +130,7 @@ export default function NewProductPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  if (status === "loading") {
+  if (status === "loading" || isLoadingProduct) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
@@ -125,12 +151,38 @@ export default function NewProductPage() {
     );
   }
 
+  if (!product) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+          <p className="text-gray-600 mb-4">The product you're trying to edit doesn't exist.</p>
+          <button
+            onClick={() => router.push("/dashboard/seller/products")}
+            className="text-indigo-600 hover:text-indigo-800"
+          >
+            Back to Products
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Add New Product</h1>
-          <p className="text-gray-600 mt-2">Create a new product listing for your store</p>
+          <div className="flex items-center space-x-4 mb-4">
+            <button
+              onClick={() => router.push("/dashboard/seller/products")}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span>Back to Products</span>
+            </button>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Edit Product</h1>
+          <p className="text-gray-600 mt-2">Update your product information</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -207,7 +259,7 @@ export default function NewProductPage() {
                           </div>
                         </div>
                       )}
-                      {uploadedImageUrl && (
+                      {uploadedImageUrl && uploadedImageUrl.startsWith('http') && (
                         <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1">
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -224,7 +276,7 @@ export default function NewProductPage() {
                         <X className="h-4 w-4" />
                         <span>Remove Image</span>
                       </button>
-                      {uploadedImageUrl && (
+                      {uploadedImageUrl && uploadedImageUrl.startsWith('http') && (
                         <span className="text-green-600 text-sm">✓ Uploaded successfully</span>
                       )}
                     </div>
@@ -272,10 +324,10 @@ export default function NewProductPage() {
               </button>
               <button
                 type="submit"
-                disabled={createProductMutation.isPending}
+                disabled={updateProductMutation.isPending}
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {createProductMutation.isPending ? "Creating..." : "Create Product"}
+                {updateProductMutation.isPending ? "Updating..." : "Update Product"}
               </button>
             </div>
           </form>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
+import NotificationBell from "./notification-bell";
 
 export function Navigation() {
   const { data: session, status } = useSession();
@@ -38,6 +39,7 @@ export function Navigation() {
                   </Link>
                 )}
                 <div className="flex items-center space-x-4">
+                  <NotificationBell />
                   <span className="text-gray-700 text-sm">
                     Hi, {session.user.name || "User"}
                   </span>
