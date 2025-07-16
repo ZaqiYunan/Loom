@@ -177,13 +177,21 @@ model CustomOrder {
   sellerId     Int      @map("seller_id")
   imageUrl     String?  // User-uploaded image of the item
   description  String   // Customization notes
-  status       String   @default("pending") // pending, accepted, rejected, completed
+  status       String   @default("pending") // pending, accepted, rejected, completed, negotiating
+  
+  // Price negotiation fields
+  initialPrice     Float?   @map("initial_price")     // Price proposed by seller
+  proposedPrice    Float?   @map("proposed_price")    // Counter-offer by buyer
+  agreedPrice      Float?   @map("agreed_price")      // Final agreed price
+  negotiationStatus String? @default("none") @map("negotiation_status") // none, seller_proposed, buyer_countered, agreed, rejected
+  
   createdAt    DateTime @default(now()) @map("created_at")
 
   user         User     @relation(fields: [userId], references: [id])
   seller       Seller   @relation(fields: [sellerId], references: [id])
   courierRequest CourierRequest?
   conversation Conversation?
+  negotiations PriceNegotiation[]
 
   @@map("custom_orders")
 }
@@ -199,4 +207,18 @@ model CourierRequest {
   customOrder   CustomOrder @relation(fields: [customOrderId], references: [id])
 
   @@map("courier_requests")
+}
+
+model PriceNegotiation {
+  id            Int      @id @default(autoincrement())
+  customOrderId Int      @map("custom_order_id")
+  proposedBy    String   // 'seller' or 'buyer'
+  price         Float
+  message       String?  // Optional message with the price offer
+  status        String   @default("pending") // pending, accepted, rejected
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  customOrder   CustomOrder @relation(fields: [customOrderId], references: [id])
+
+  @@map("price_negotiations")
 }

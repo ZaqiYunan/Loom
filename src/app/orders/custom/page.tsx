@@ -2,12 +2,13 @@
 
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
-import { Package, Truck, Clock, CheckCircle, XCircle, Eye, Plus } from "lucide-react";
+import { Package, Truck, Clock, CheckCircle, XCircle, Eye, Plus, DollarSign } from "lucide-react";
 import Link from "next/link";
+import PriceNegotiation from "~/app/_components/price-negotiation";
 
 export default function CustomOrdersPage() {
   const { data: session, status } = useSession();
-  const { data: customOrders, isLoading } = api.customOrder.getForUser.useQuery(
+  const { data: customOrders, isLoading, refetch } = api.customOrder.getForUser.useQuery(
     undefined,
     { enabled: !!session }
   );
@@ -83,6 +84,7 @@ export default function CustomOrdersPage() {
                     order.status === 'completed' ? 'bg-green-100 text-green-800' :
                     order.status === 'accepted' ? 'bg-blue-100 text-blue-800' :
                     order.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                    order.status === 'negotiating' ? 'bg-purple-100 text-purple-800' :
                     'bg-yellow-100 text-yellow-800'
                   }`}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
@@ -145,6 +147,15 @@ export default function CustomOrdersPage() {
                 </div>
               )}
 
+              {/* Price Negotiation Section */}
+              {(order.status === 'pending' || order.status === 'negotiating' || order.status === 'accepted') && (
+                <PriceNegotiation 
+                  customOrder={order} 
+                  userRole="buyer" 
+                  onUpdate={() => refetch()}
+                />
+              )}
+
               {/* Action Buttons */}
               <div className="border-t pt-4">
                 <div className="flex space-x-3">
@@ -153,7 +164,7 @@ export default function CustomOrdersPage() {
                     <span>View Details</span>
                   </button>
                   
-                  {order.status === 'accepted' && (
+                  {(order.status === 'accepted' || order.status === 'negotiating') && (
                     <Link
                       href={`/chat/custom-order/${order.id}`}
                       className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
@@ -165,10 +176,17 @@ export default function CustomOrdersPage() {
                     </Link>
                   )}
 
-                  {order.status === 'pending' && (
+                  {order.status === 'pending' && !order.negotiationStatus && (
                     <span className="flex items-center space-x-2 text-yellow-600 px-4 py-2">
                       <Clock className="h-4 w-4" />
                       <span>Waiting for designer response</span>
+                    </span>
+                  )}
+
+                  {order.status === 'negotiating' && (
+                    <span className="flex items-center space-x-2 text-purple-600 px-4 py-2">
+                      <DollarSign className="h-4 w-4" />
+                      <span>Price negotiation in progress</span>
                     </span>
                   )}
 

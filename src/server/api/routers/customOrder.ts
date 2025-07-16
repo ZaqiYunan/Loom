@@ -84,6 +84,10 @@ export const customOrderRouter = createTRPCRouter({
           }
         },
         courierRequest: true,
+        negotiations: {
+          orderBy: { createdAt: 'desc' },
+          take: 1, // Get latest negotiation
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -111,6 +115,10 @@ export const customOrderRouter = createTRPCRouter({
           }
         },
         courierRequest: true,
+        negotiations: {
+          orderBy: { createdAt: 'desc' },
+          take: 1, // Get latest negotiation
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -123,7 +131,7 @@ export const customOrderRouter = createTRPCRouter({
     .input(
       z.object({
         customOrderId: z.number(),
-        status: z.enum(['pending', 'accepted', 'rejected', 'completed']),
+        status: z.enum(['pending', 'accepted', 'rejected', 'completed', 'negotiating']),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -151,8 +159,8 @@ export const customOrderRouter = createTRPCRouter({
         data: { status: input.status },
       });
 
-      // Create a conversation when the order is accepted
-      if (input.status === 'accepted') {
+      // Create a conversation when the order is accepted or negotiating
+      if (input.status === 'accepted' || input.status === 'negotiating') {
         const existingConversation = await ctx.db.$queryRaw<Array<{id: number}>>`
           SELECT id FROM conversations WHERE custom_order_id = ${input.customOrderId}
         `;
@@ -169,6 +177,7 @@ export const customOrderRouter = createTRPCRouter({
         accepted: 'Your custom order has been accepted! You can now chat with the designer.',
         rejected: 'Your custom order has been rejected.',
         completed: 'Your custom order has been completed!',
+        negotiating: 'The seller has started price negotiation for your custom order.',
       };
 
       if (input.status !== 'pending') {
@@ -243,5 +252,242 @@ export const customOrderRouter = createTRPCRouter({
       }
 
       return updatedRequest;
+    }),
+
+  /**
+   * Propose initial price (seller)
+   */
+  proposePrice: sellerProcedure
+    .input(
+      z.object({
+        customOrderId: z.number(),
+        price: z.number().min(0, "Price must be positive"),
+        message: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const seller = await ctx.db.seller.findUnique({
+        where: { userId: parseInt(ctx.session.user.id) },
+      });
+
+      if (!seller) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Seller profile not found.' });
+      }
+
+      // Verify this custom order belongs to the seller
+      const customOrder = await ctx.db.customOrder.findUnique({
+        where: { id: input.customOrderId },
+        include: { user: true },
+      });
+
+      if (!customOrder || customOrder.sellerId !== seller.id) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You do not have permission to modify this order.' });
+      }
+
+      // Update custom order with initial price and status
+      const updatedOrder = await ctx.db.customOrder.update({
+        where: { id: input.customOrderId },
+        data: {
+          initialPrice: input.price,
+          negotiationStatus: 'seller_proposed',
+          status: 'negotiating',
+        },
+      });
+
+      // Create price negotiation record
+      await ctx.db.priceNegotiation.create({
+        data: {
+          customOrderId: input.customOrderId,
+          proposedBy: 'seller',
+          price: input.price,
+          message: input.message,
+          status: 'pending',
+        },
+      });
+
+      // Create notification for buyer
+      await ctx.db.notification.create({
+        data: {
+          userId: customOrder.userId,
+          title: 'Price Proposal Received',
+          message: `The seller has proposed a price of $${input.price} for your custom order.`,
+          type: 'price_negotiation',
+        },
+      });
+
+      return updatedOrder;
+    }),
+
+  /**
+   * Counter offer price (buyer)
+   */
+  counterOffer: protectedProcedure
+    .input(
+      z.object({
+        customOrderId: z.number(),
+        price: z.number().min(0, "Price must be positive"),
+        message: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = parseInt(ctx.session.user.id);
+
+      // Verify this custom order belongs to the user
+      const customOrder = await ctx.db.customOrder.findUnique({
+        where: { id: input.customOrderId },
+        include: { 
+          seller: {
+            include: { user: true }
+          }
+        },
+      });
+
+      if (!customOrder || customOrder.userId !== userId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You do not have permission to modify this order.' });
+      }
+
+      // Update custom order with proposed price
+      const updatedOrder = await ctx.db.customOrder.update({
+        where: { id: input.customOrderId },
+        data: {
+          proposedPrice: input.price,
+          negotiationStatus: 'buyer_countered',
+        },
+      });
+
+      // Create price negotiation record
+      await ctx.db.priceNegotiation.create({
+        data: {
+          customOrderId: input.customOrderId,
+          proposedBy: 'buyer',
+          price: input.price,
+          message: input.message,
+          status: 'pending',
+        },
+      });
+
+      // Create notification for seller
+      await ctx.db.notification.create({
+        data: {
+          userId: customOrder.seller.userId,
+          title: 'Counter Offer Received',
+          message: `The buyer has counter-offered $${input.price} for the custom order.`,
+          type: 'price_negotiation',
+        },
+      });
+
+      return updatedOrder;
+    }),
+
+  /**
+   * Accept price negotiation
+   */
+  acceptPrice: protectedProcedure
+    .input(
+      z.object({
+        customOrderId: z.number(),
+        negotiationId: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = parseInt(ctx.session.user.id);
+
+      // Get the negotiation record
+      const negotiation = await ctx.db.priceNegotiation.findUnique({
+        where: { id: input.negotiationId },
+        include: {
+          customOrder: {
+            include: {
+              user: true,
+              seller: { include: { user: true } }
+            }
+          }
+        }
+      });
+
+      if (!negotiation) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Negotiation not found.' });
+      }
+
+      const customOrder = negotiation.customOrder;
+
+      // Verify user has permission (either buyer or seller)
+      const isBuyer = customOrder.userId === userId;
+      const isSeller = customOrder.seller.userId === userId;
+
+      if (!isBuyer && !isSeller) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You do not have permission to accept this offer.' });
+      }
+
+      // Update custom order with agreed price
+      const updatedOrder = await ctx.db.customOrder.update({
+        where: { id: input.customOrderId },
+        data: {
+          agreedPrice: negotiation.price,
+          negotiationStatus: 'agreed',
+          status: 'accepted',
+        },
+      });
+
+      // Update negotiation status
+      await ctx.db.priceNegotiation.update({
+        where: { id: input.negotiationId },
+        data: { status: 'accepted' },
+      });
+
+      // Create notifications for both parties
+      const notificationForBuyer = {
+        userId: customOrder.userId,
+        title: 'Price Agreement Reached',
+        message: `Price of $${negotiation.price} has been agreed for your custom order.`,
+        type: 'price_agreed',
+      };
+
+      const notificationForSeller = {
+        userId: customOrder.seller.userId,
+        title: 'Price Agreement Reached',
+        message: `Price of $${negotiation.price} has been agreed for the custom order.`,
+        type: 'price_agreed',
+      };
+
+      // Send notification to the other party (not the one who accepted)
+      if (isBuyer) {
+        await ctx.db.notification.create({ data: notificationForSeller });
+      } else {
+        await ctx.db.notification.create({ data: notificationForBuyer });
+      }
+
+      return updatedOrder;
+    }),
+
+  /**
+   * Get price negotiations for a custom order
+   */
+  getNegotiations: protectedProcedure
+    .input(z.object({ customOrderId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const userId = parseInt(ctx.session.user.id);
+
+      // Verify user has access to this custom order
+      const customOrder = await ctx.db.customOrder.findUnique({
+        where: { id: input.customOrderId },
+        include: { seller: true },
+      });
+
+      if (!customOrder) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Custom order not found.' });
+      }
+
+      const isBuyer = customOrder.userId === userId;
+      const isSeller = customOrder.seller.userId === userId;
+
+      if (!isBuyer && !isSeller) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You do not have permission to view these negotiations.' });
+      }
+
+      return ctx.db.priceNegotiation.findMany({
+        where: { customOrderId: input.customOrderId },
+        orderBy: { createdAt: 'asc' },
+      });
     }),
 });

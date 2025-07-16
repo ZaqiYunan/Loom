@@ -2,8 +2,9 @@
 
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
-import { Package, Truck, Clock, CheckCircle, XCircle, Eye, MessageCircle } from "lucide-react";
+import { Package, Truck, Clock, CheckCircle, XCircle, Eye, MessageCircle, DollarSign } from "lucide-react";
 import Link from "next/link";
+import PriceNegotiation from "~/app/_components/price-negotiation";
 
 export default function SellerCustomOrdersPage() {
   const { data: session, status } = useSession();
@@ -35,7 +36,7 @@ export default function SellerCustomOrdersPage() {
   const handleStatusUpdate = (customOrderId: number, status: string) => {
     updateStatusMutation.mutate({ 
       customOrderId, 
-      status: status as "pending" | "accepted" | "rejected" | "completed" 
+      status: status as "pending" | "accepted" | "rejected" | "completed" | "negotiating"
     });
   };
 
@@ -110,6 +111,7 @@ export default function SellerCustomOrdersPage() {
                     order.status === 'completed' ? 'bg-green-100 text-green-800' :
                     order.status === 'accepted' ? 'bg-blue-100 text-blue-800' :
                     order.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                    order.status === 'negotiating' ? 'bg-purple-100 text-purple-800' :
                     'bg-yellow-100 text-yellow-800'
                   }`}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
@@ -209,6 +211,15 @@ export default function SellerCustomOrdersPage() {
                 </div>
               )}
 
+              {/* Price Negotiation Section */}
+              {(order.status === 'pending' || order.status === 'negotiating' || order.status === 'accepted') && (
+                <PriceNegotiation 
+                  customOrder={order} 
+                  userRole="seller" 
+                  onUpdate={() => refetch()}
+                />
+              )}
+
               {/* Action Buttons */}
               <div className="border-t pt-4">
                 <div className="flex flex-wrap gap-3">
@@ -223,6 +234,14 @@ export default function SellerCustomOrdersPage() {
                         <span>Accept Order</span>
                       </button>
                       <button
+                        onClick={() => handleStatusUpdate(order.id, 'negotiating')}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <DollarSign className="h-4 w-4" />
+                        <span>Start Price Negotiation</span>
+                      </button>
+                      <button
                         onClick={() => handleStatusUpdate(order.id, 'rejected')}
                         className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
                         disabled={updateStatusMutation.isPending}
@@ -233,7 +252,7 @@ export default function SellerCustomOrdersPage() {
                     </>
                   )}
 
-                  {order.status === 'accepted' && (
+                  {(order.status === 'accepted' || order.status === 'negotiating') && (
                     <>
                       <Link
                         href={`/chat/custom-order/${order.id}`}
@@ -242,14 +261,16 @@ export default function SellerCustomOrdersPage() {
                         <MessageCircle className="h-4 w-4" />
                         <span>Chat with Customer</span>
                       </Link>
-                      <button
-                        onClick={() => handleStatusUpdate(order.id, 'completed')}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Mark Completed</span>
-                      </button>
+                      {order.status === 'accepted' && (
+                        <button
+                          onClick={() => handleStatusUpdate(order.id, 'completed')}
+                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          <span>Mark Completed</span>
+                        </button>
+                      )}
                     </>
                   )}
 
