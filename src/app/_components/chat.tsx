@@ -50,14 +50,13 @@ export default function Chat({ conversationId, orderId, customOrderId, otherUser
     },
   });
 
-  // Subscribe to new messages
-  api.chat.onNewMessage.useSubscription(
+  // Poll for new messages instead of using subscriptions
+  const { data: latestMessages } = api.chat.getHistory.useQuery(
     { conversationId },
-    {
-      onData: (newMessage) => {
-        setMessages((prev) => [...prev, newMessage as ChatMessage]);
-      },
+    { 
       enabled: !!conversationId,
+      refetchInterval: 2000, // Poll every 2 seconds
+      refetchIntervalInBackground: true,
     }
   );
 
@@ -67,6 +66,13 @@ export default function Chat({ conversationId, orderId, customOrderId, otherUser
       setMessages(messageHistory);
     }
   }, [messageHistory]);
+
+  // Update messages when new ones are polled
+  useEffect(() => {
+    if (latestMessages && latestMessages.length > messages.length) {
+      setMessages(latestMessages);
+    }
+  }, [latestMessages, messages.length]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

@@ -1,11 +1,6 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 import { TRPCError } from '@trpc/server';
-import { observable } from '@trpc/server/observable';
-import { EventEmitter } from 'events';
-
-// EventEmitter untuk menangani event pesan real-time
-const ee = new EventEmitter();
 
 export const chatRouter = createTRPCRouter({
   /**
@@ -128,30 +123,7 @@ export const chatRouter = createTRPCRouter({
         });
       }
 
-      // Emit event bahwa ada pesan baru
-      ee.emit(`newMessage.${conversation.id}`, newMessage);
-
       return newMessage;
-    }),
-
-  /**
-   * Subscription untuk mendengarkan pesan baru secara real-time.
-   */
-  onNewMessage: protectedProcedure
-    .input(z.object({ conversationId: z.number() }))
-    .subscription(({ input }) => {
-      return observable((emit) => {
-        const handler = (data: any) => {
-          emit.next(data);
-        };
-
-        ee.on(`newMessage.${input.conversationId}`, handler);
-
-        // Cleanup saat subscription berakhir
-        return () => {
-          ee.off(`newMessage.${input.conversationId}`, handler);
-        };
-      });
     }),
     
     /**
