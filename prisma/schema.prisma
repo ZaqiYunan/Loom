@@ -178,7 +178,7 @@ model CustomOrder {
   sellerId     Int      @map("seller_id")
   imageUrl     String?  // User-uploaded image of the item
   description  String   // Customization notes
-  status       String   @default("pending") // pending, accepted, rejected, completed, negotiating
+  status       String   @default("pending") // pending, accepted, rejected, completed, negotiating, payment_pending, paid
   
   // Price negotiation fields
   initialPrice     Float?   @map("initial_price")     // Price proposed by seller
@@ -186,7 +186,13 @@ model CustomOrder {
   agreedPrice      Float?   @map("agreed_price")      // Final agreed price
   negotiationStatus String? @default("none") @map("negotiation_status") // none, seller_proposed, buyer_countered, agreed, rejected
   
+  // Payment fields
+  snapToken        String?  @map("snap_token")        // Midtrans payment token
+  paymentStatus    String?  @default("unpaid") @map("payment_status") // unpaid, pending, paid, failed, expired
+  paidAt          DateTime? @map("paid_at")           // Payment completion timestamp
+  
   createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
 
   user         User     @relation(fields: [userId], references: [id])
   seller       Seller   @relation(fields: [sellerId], references: [id])

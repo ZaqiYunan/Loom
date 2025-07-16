@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import { ArrowLeft, Package, User, Clock } from "lucide-react";
 import Link from "next/link";
 import Chat from "~/app/_components/chat";
+import CustomOrderPayment from "~/app/_components/custom-order-payment";
 
 export default function CustomOrderChatPage() {
   const params = useParams();
@@ -161,6 +162,18 @@ export default function CustomOrderChatPage() {
               </p>
             </div>
           </div>
+
+          {/* Payment Section - show for customers when order is accepted and has final price */}
+          {isCustomer && customOrder.status === 'accepted' && customOrder.finalPrice && (
+            <div className="mt-4">
+              <CustomOrderPayment
+                orderId={customOrder.id}
+                amount={customOrder.finalPrice}
+                paymentStatus={customOrder.paymentStatus || 'PENDING'}
+                onUpdate={() => window.location.reload()}
+              />
+            </div>
+          )}
         </div>
       </div>
 

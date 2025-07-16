@@ -5,6 +5,7 @@ import { api } from "~/trpc/react";
 import { Package, Truck, Clock, CheckCircle, XCircle, Eye, Plus, DollarSign } from "lucide-react";
 import Link from "next/link";
 import PriceNegotiation from "~/app/_components/price-negotiation";
+import CustomOrderPayment from "~/app/_components/custom-order-payment";
 
 export default function CustomOrdersPage() {
   const { data: session, status } = useSession();
@@ -176,6 +177,15 @@ export default function CustomOrdersPage() {
                     </Link>
                   )}
 
+                  {/* Payment button for agreed prices */}
+                  {order.status === 'accepted' && order.finalPrice && order.paymentStatus === 'PENDING' && (
+                    <CustomOrderPayment
+                      orderId={order.id}
+                      amount={order.finalPrice}
+                      paymentStatus={order.paymentStatus}
+                    />
+                  )}
+
                   {order.status === 'pending' && !order.negotiationStatus && (
                     <span className="flex items-center space-x-2 text-yellow-600 px-4 py-2">
                       <Clock className="h-4 w-4" />
@@ -201,6 +211,28 @@ export default function CustomOrdersPage() {
                     <span className="flex items-center space-x-2 text-red-600 px-4 py-2">
                       <XCircle className="h-4 w-4" />
                       <span>Order rejected</span>
+                    </span>
+                  )}
+
+                  {/* Payment status indicators */}
+                  {order.paymentStatus === 'PAID' && (
+                    <span className="flex items-center space-x-2 text-green-600 px-4 py-2">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>Payment Completed</span>
+                    </span>
+                  )}
+
+                  {order.paymentStatus === 'PROCESSING' && (
+                    <span className="flex items-center space-x-2 text-blue-600 px-4 py-2">
+                      <Clock className="h-4 w-4" />
+                      <span>Payment Processing</span>
+                    </span>
+                  )}
+
+                  {order.paymentStatus === 'FAILED' && (
+                    <span className="flex items-center space-x-2 text-red-600 px-4 py-2">
+                      <XCircle className="h-4 w-4" />
+                      <span>Payment Failed</span>
                     </span>
                   )}
                 </div>

@@ -131,7 +131,7 @@ export const customOrderRouter = createTRPCRouter({
     .input(
       z.object({
         customOrderId: z.number(),
-        status: z.enum(['pending', 'accepted', 'rejected', 'completed', 'negotiating']),
+        status: z.enum(['pending', 'accepted', 'rejected', 'completed', 'negotiating', 'payment_pending']),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -173,11 +173,12 @@ export const customOrderRouter = createTRPCRouter({
       }
 
       // Create notification for user
-      const statusMessage = {
+      const statusMessage: Record<string, string> = {
         accepted: 'Your custom order has been accepted! You can now chat with the designer.',
         rejected: 'Your custom order has been rejected.',
         completed: 'Your custom order has been completed!',
         negotiating: 'The seller has started price negotiation for your custom order.',
+        payment_pending: 'Your custom order is awaiting payment.',
       };
 
       if (input.status !== 'pending') {
@@ -425,7 +426,7 @@ export const customOrderRouter = createTRPCRouter({
         data: {
           agreedPrice: negotiation.price,
           negotiationStatus: 'agreed',
-          status: 'accepted',
+          status: 'payment_pending', // Move to payment pending after agreement
         },
       });
 
@@ -489,5 +490,222 @@ export const customOrderRouter = createTRPCRouter({
         where: { customOrderId: input.customOrderId },
         orderBy: { createdAt: 'asc' },
       });
+    }),
+
+  /**
+   * Create payment for custom order
+   */
+  createPayment: protectedProcedure
+    .input(z.object({ customOrderId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = parseInt(ctx.session.user.id);
+
+      // Verify user owns this custom order
+      const customOrder = await ctx.db.customOrder.findUnique({
+        where: { id: input.customOrderId },
+        include: {
+          seller: {
+            include: { user: true }
+          }
+        },
+      });
+
+      if (!customOrder || customOrder.userId !== userId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You do not have permission to pay for this order.' });
+      }
+
+      if (!customOrder.agreedPrice) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'No agreed price found for this custom order.' });
+      }
+
+      if (customOrder.paymentStatus === 'paid') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'This custom order has already been paid.' });
+      }
+
+      // Create Midtrans payment
+      const midtrans = require('midtrans-client');
+      const snap = new midtrans.Snap({
+        isProduction: false, // Set to true for production
+        serverKey: process.env.MIDTRANS_SERVER_KEY,
+      });
+
+      const parameter = {
+        transaction_details: {
+          order_id: `custom-order-${customOrder.id}-${Date.now()}`,
+          gross_amount: Math.round(customOrder.agreedPrice),
+        },
+        credit_card: {
+          secure: true,
+        },
+        customer_details: {
+          first_name: ctx.session.user.name,
+          email: ctx.session.user.email,
+        },
+        item_details: [
+          {
+            id: `custom-order-${customOrder.id}`,
+            price: Math.round(customOrder.agreedPrice),
+            quantity: 1,
+            name: `Custom Order from ${customOrder.seller.storeName}`,
+          },
+        ],
+      };
+
+      try {
+        const transaction = await snap.createTransaction(parameter);
+        
+        // Update custom order with snap token
+        await ctx.db.customOrder.update({
+          where: { id: input.customOrderId },
+          data: {
+            snapToken: transaction.token,
+            paymentStatus: 'pending',
+            status: 'payment_pending',
+          },
+        });
+
+        return {
+          snapToken: transaction.token,
+          redirectUrl: transaction.redirect_url,
+        };
+      } catch (error: any) {
+        throw new TRPCError({ 
+          code: 'INTERNAL_SERVER_ERROR', 
+          message: `Payment creation failed: ${error.message}` 
+        });
+      }
+    }),
+
+  /**
+   * Handle payment notification/callback
+   */
+  handlePaymentNotification: protectedProcedure
+    .input(
+      z.object({
+        customOrderId: z.number(),
+        transactionStatus: z.string(),
+        paymentType: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { customOrderId, transactionStatus } = input;
+
+      let status = 'payment_pending';
+      let paymentStatus = 'pending';
+
+      // Map Midtrans status to our status
+      switch (transactionStatus) {
+        case 'capture':
+        case 'settlement':
+          status = 'accepted';
+          paymentStatus = 'paid';
+          break;
+        case 'pending':
+          status = 'payment_pending';
+          paymentStatus = 'pending';
+          break;
+        case 'deny':
+        case 'cancel':
+        case 'expire':
+          status = 'payment_pending';
+          paymentStatus = 'failed';
+          break;
+        default:
+          paymentStatus = 'pending';
+      }
+
+      const updateData: any = {
+        paymentStatus,
+        status,
+      };
+
+      if (paymentStatus === 'paid') {
+        updateData.paidAt = new Date();
+      }
+
+      // Update custom order
+      const updatedOrder = await ctx.db.customOrder.update({
+        where: { id: customOrderId },
+        data: updateData,
+        include: {
+          user: true,
+          seller: { include: { user: true } },
+        },
+      });
+
+      // Create notifications
+      if (paymentStatus === 'paid') {
+        // Notify seller
+        await ctx.db.notification.create({
+          data: {
+            userId: updatedOrder.seller.userId,
+            title: 'Payment Received',
+            message: `Payment of $${updatedOrder.agreedPrice} has been received for custom order #${customOrderId}. You can now start working on the order.`,
+            type: 'payment_received',
+          },
+        });
+
+        // Notify buyer
+        await ctx.db.notification.create({
+          data: {
+            userId: updatedOrder.userId,
+            title: 'Payment Successful',
+            message: `Your payment of $${updatedOrder.agreedPrice} for custom order #${customOrderId} has been processed successfully.`,
+            type: 'payment_success',
+          },
+        });
+      }
+
+      return updatedOrder;
+    }),
+
+  /**
+   * Get single custom order by ID
+   */
+  getById: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const userId = parseInt(ctx.session.user.id);
+
+      const customOrder = await ctx.db.customOrder.findUnique({
+        where: { id: input.id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            }
+          },
+          seller: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                }
+              }
+            }
+          },
+          courierRequest: true,
+          negotiations: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      });
+
+      if (!customOrder) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Custom order not found.' });
+      }
+
+      // Check if user has permission to view this order
+      const isBuyer = customOrder.userId === userId;
+      const isSeller = customOrder.seller.userId === userId;
+
+      if (!isBuyer && !isSeller) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You do not have permission to view this order.' });
+      }
+
+      return customOrder;
     }),
 });
