@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { api } from "~/trpc/react";
-import { Plus, Edit, Trash2, Star, StarOff, Eye, Upload } from "lucide-react";
+import { Plus, Edit, Trash2, Star, StarOff, Eye, Upload, X } from "lucide-react";
 import Link from "next/link";
+import { uploadImage, validateImageFile } from "~/lib/upload";
 
 export default function SellerPortfolioPage() {
   const { data: session, status } = useSession();
@@ -18,6 +19,9 @@ export default function SellerPortfolioPage() {
     tags: "",
     featured: false,
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [uploadProgress, setUploadProgress] = useState(false);
 
   const { data: portfolioItems, isLoading, refetch } = api.portfolio.getForSeller.useQuery(
     undefined,
@@ -27,14 +31,7 @@ export default function SellerPortfolioPage() {
   const createMutation = api.portfolio.create.useMutation({
     onSuccess: () => {
       setShowAddForm(false);
-      setFormData({
-        title: "",
-        description: "",
-        imageUrl: "",
-        category: "",
-        tags: "",
-        featured: false,
-      });
+      resetForm();
       refetch();
     },
   });
@@ -42,14 +39,7 @@ export default function SellerPortfolioPage() {
   const updateMutation = api.portfolio.update.useMutation({
     onSuccess: () => {
       setEditingItem(null);
-      setFormData({
-        title: "",
-        description: "",
-        imageUrl: "",
-        category: "",
-        tags: "",
-        featured: false,
-      });
+      resetForm();
       refetch();
     },
   });
@@ -68,13 +58,46 @@ export default function SellerPortfolioPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    let imageUrl = formData.imageUrl;
+    
+    // If a file is selected, upload it first
+    if (selectedFile) {
+      const validation = validateImageFile(selectedFile);
+      if (!validation.valid) {
+        alert(validation.error);
+        return;
+      }
+      
+      setUploadProgress(true);
+      const uploadResult = await uploadImage(selectedFile);
+      setUploadProgress(false);
+      
+      if (!uploadResult.success) {
+        alert(uploadResult.error || "Failed to upload image");
+        return;
+      }
+      
+      imageUrl = uploadResult.url!;
+    }
+    
+    if (!imageUrl) {
+      alert("Please select an image");
+      return;
+    }
+    
+    const submissionData = {
+      ...formData,
+      imageUrl,
+    };
+    
     if (editingItem) {
       await updateMutation.mutateAsync({
         id: editingItem.id,
-        ...formData,
+        ...submissionData,
       });
     } else {
-      await createMutation.mutateAsync(formData);
+      await createMutation.mutateAsync(submissionData);
     }
   };
 
@@ -88,7 +111,53 @@ export default function SellerPortfolioPage() {
       tags: item.tags || "",
       featured: item.featured,
     });
+    setSelectedFile(null);
+    setPreviewUrl(item.imageUrl);
     setShowAddForm(true);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        alert(validation.error);
+        e.target.value = "";
+        return;
+      }
+      
+      setSelectedFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      
+      // Clear the URL field since we're using file upload
+      setFormData({ ...formData, imageUrl: "" });
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setFormData({ ...formData, imageUrl: "" });
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      imageUrl: "",
+      category: "",
+      tags: "",
+      featured: false,
+    });
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setUploadProgress(false);
   };
 
   const handleDelete = async (id: number) => {
@@ -136,14 +205,7 @@ export default function SellerPortfolioPage() {
           onClick={() => {
             setShowAddForm(true);
             setEditingItem(null);
-            setFormData({
-              title: "",
-              description: "",
-              imageUrl: "",
-              category: "",
-              tags: "",
-              featured: false,
-            });
+            resetForm();
           }}
           className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
         >
@@ -197,16 +259,69 @@ export default function SellerPortfolioPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Image URL *
+                Image *
               </label>
-              <input
-                type="url"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="https://example.com/image.jpg"
-                required
-              />
+              
+              {/* Image Preview */}
+              {previewUrl && (
+                <div className="mb-4 relative">
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+              
+              {/* File Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                <input
+                  type="file"
+                  id="image-upload"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="image-upload"
+                  className="cursor-pointer flex flex-col items-center space-y-2"
+                >
+                  <Upload className="h-8 w-8 text-gray-400" />
+                  <span className="text-sm text-gray-600">
+                    {selectedFile ? selectedFile.name : "Click to upload image"}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    JPEG, PNG, WebP up to 5MB
+                  </span>
+                </label>
+              </div>
+              
+              {/* URL Input as fallback */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Or enter image URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => {
+                    setFormData({ ...formData, imageUrl: e.target.value });
+                    if (e.target.value) {
+                      setPreviewUrl(e.target.value);
+                      setSelectedFile(null);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
             </div>
 
             <div>
@@ -251,16 +366,22 @@ export default function SellerPortfolioPage() {
             <div className="flex space-x-3">
               <button
                 type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
-                className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                disabled={createMutation.isPending || updateMutation.isPending || uploadProgress}
+                className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
               >
-                {createMutation.isPending || updateMutation.isPending ? "Saving..." : editingItem ? "Update" : "Add"}
+                {uploadProgress && <Upload className="h-4 w-4 animate-pulse" />}
+                <span>
+                  {uploadProgress ? "Uploading..." : 
+                   createMutation.isPending || updateMutation.isPending ? "Saving..." : 
+                   editingItem ? "Update" : "Add"}
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setShowAddForm(false);
                   setEditingItem(null);
+                  resetForm();
                 }}
                 className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors"
               >
