@@ -53,7 +53,9 @@ export function ProductCard({ product }: { product: ProductWithSeller }) {
                 </div>
             </Link>
             <div className="p-4">
-                <p className="text-xs text-gray-500">by {product.seller.user.fullName}</p>
+                <Link href={`/shop/${product.seller.id}`} className="text-xs text-gray-500 hover:text-indigo-600 transition-colors">
+                    by {product.seller.user.fullName}
+                </Link>
                 <Link href={`/product/${product.id}`}>
                     <h3 className="mt-1 truncate text-lg font-semibold text-gray-900 hover:text-indigo-600">{product.name}</h3>
                 </Link>
